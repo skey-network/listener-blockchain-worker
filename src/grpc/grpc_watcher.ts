@@ -98,7 +98,6 @@ class GrpcWatcher {
   }
 
   async processEventDetailed(event: SubscribeEvent) {
-    console.log('event')
     const txids = event.update?.append?.transaction_ids!
     await this.grpcUtils.runOnTransactions(txids, (x: TransactionResponse) => {
       this.processTransaction(x)
