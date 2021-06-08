@@ -91,6 +91,7 @@ class BlockchainWatcher {
 
   async parseTransaction(transaction: any) {
     const span = Tracing.instance.createSpanFromTx(transaction.id, 'listener-http')
+    const timestamp = transaction.timestamp
     const fn = this.options.watchedFunctions.find(
       (x) => x.name == transaction.call.function
     )!
@@ -107,7 +108,15 @@ class BlockchainWatcher {
 
     // no need to await...
     this.iotFunction(
-      { tx: transaction.id, device, action, key, func: fn.name, deviceModel },
+      {
+        tx: transaction.id,
+        device,
+        action,
+        key,
+        func: fn.name,
+        deviceModel,
+        timestamp
+      },
       span
     )
   }

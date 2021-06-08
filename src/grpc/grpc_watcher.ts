@@ -107,6 +107,7 @@ class GrpcWatcher {
 
   processTransaction(tx: TransactionResponse) {
     const txobj = tx.transaction?.transaction!
+    const timestamp = Number(tx.transaction?.transaction?.timestamp)
     const tracingSpan = Tracing.instance.createSpanFromTx(
       tx.id as Uint8Array,
       'listener-grpc'
@@ -131,10 +132,15 @@ class GrpcWatcher {
     // filter by silent invokers
     if (this.options.silent && this.options.silent!.indexOf(invoker) != -1) return true
 
-    this.processAction(parsedCall, tx.id as Uint8Array, tracingSpan)
+    this.processAction(parsedCall, tx.id as Uint8Array, timestamp, tracingSpan)
   }
 
-  async processAction(call: InvokeParser, txId: Uint8Array, span?: SpanWrapper) {
+  async processAction(
+    call: InvokeParser,
+    txId: Uint8Array,
+    timestamp: number,
+    span?: SpanWrapper
+  ) {
     const func = this.options.functionDefs.find((x) => x.name == call.fName)
     const key = call.args[func!.keyArgument] as string
     const action = call.args[func!.actionArgument] as string
@@ -152,7 +158,8 @@ class GrpcWatcher {
       device,
       deviceModel: deviceModel,
       func: func?.name,
-      key
+      key,
+      timestamp
     }
 
     if (validTo && validTo < Date.now()) {
