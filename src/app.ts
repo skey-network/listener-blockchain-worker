@@ -11,7 +11,7 @@ import ActionParams from './action_params'
 import YargsParser from 'yargs-parser'
 import fs from 'fs'
 import { Producer } from './queue/producer'
-
+import Worker from './worker'
 ///////////////////////////////////// check for env /////////////////////////////
 const args = YargsParser(process.argv.slice(2))
 
@@ -67,54 +67,11 @@ if (process.env.DAPP_FUNCS) {
 } else throw 'No functions to watch specified (DAPP_FUNCS)'
 
 if (!process.env.LISTENER_MODE) throw 'LISTENER_MODE is not specified'
-switch (process.env.LISTENER_MODE) {
-  case 'grpc':
-    runInGrpcMode(runInHttpMode)
-    break
 
-  case 'http':
-    runInHttpMode()
-    break
-
-  default:
-    throw 'LISTENER_MODE is not specified or wrong, supported modes: http/grpc'
-}
-
-const producer = new Producer({
-  exitAfterRedisProblemSec: 120
+new Worker({
+  dapp: process.env.DAPP!,
+  functionDefs: FUNCTIONS,
+  http: { checkInterval: CHECK_INTERVAL, safetyLevel: SAFETY_LEVEL },
+  mode: process.env.LISTENER_MODE! as 'http' | 'grpc',
+  silentInvokers: SILENT_INVOKERS
 })
-
-function runInGrpcMode(fallback: () => void) {
-  console.log(`Listener starting in grpc mode`)
-  new GrpcWatcher(
-    {
-      dApp: process.env.DAPP!,
-      functionDefs: FUNCTIONS,
-      silent: SILENT_INVOKERS
-    },
-    (params: ActionParams, span?: SpanWrapper) => {
-      producer.pushToQueue(params, span)
-    },
-    fallback
-  )
-}
-
-function runInHttpMode() {
-  console.log(
-    `Listener starting in http mode, safety level: ${SAFETY_LEVEL}, interval: ${CHECK_INTERVAL}`
-  )
-  const watcher = new BlockchainWatcher(
-    {
-      dapp: process.env.DAPP!,
-      watchedFunctions: FUNCTIONS,
-      silent: SILENT_INVOKERS,
-      blocksToReparse: 2,
-      checkInterval: CHECK_INTERVAL,
-      safety: SAFETY_LEVEL
-    },
-    (params: ActionParams, span?: SpanWrapper) => {
-      producer.pushToQueue(params, span)
-    }
-  )
-  watcher.start()
-}

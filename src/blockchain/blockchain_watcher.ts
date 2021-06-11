@@ -6,6 +6,7 @@ import { SpanWrapper, Tracing } from '../tracing'
 import { ProducerPushFnType } from '../queue/producer'
 
 type WatcherOptions = {
+  nodeUrl: string
   dapp: string
   watchedFunctions: BCFunc[]
   silent?: string[]
@@ -16,15 +17,23 @@ type WatcherOptions = {
 
 class BlockchainWatcher {
   options: WatcherOptions
+  utils: BlockchainUtils
   iotFunction: ProducerPushFnType
+  onError: () => void
   filters: Filters
 
   /// latest bc state
   block: number | undefined
   parsedTxesInLastBlocks: { block: number; tx: string }[] = []
 
-  constructor(options: WatcherOptions, iotFunction: ProducerPushFnType) {
+  constructor(
+    options: WatcherOptions,
+    iotFunction: ProducerPushFnType,
+    onError: () => void
+  ) {
+    this.onError = onError
     this.options = options
+    this.utils = new BlockchainUtils(this.options.nodeUrl)
     this.iotFunction = iotFunction
     this.filters = new Filters(
       this.options.dapp,
@@ -34,18 +43,25 @@ class BlockchainWatcher {
   }
 
   async start() {
-    this.block = (await BlockchainUtils.getBlocksCount()) - 1 - this.options.safety
-    while (1) {
-      const latestBlock = (await BlockchainUtils.getBlocksCount()) - this.options.safety
-      if (latestBlock > this.block || this.options.safety == 0) {
-        // if block changed or every check when from liquid too
-        await this.parseBlocksRange(
-          this.block - this.options.blocksToReparse,
-          latestBlock
-        )
-        this.block = latestBlock
+    try {
+      this.block = (await this.utils.getBlocksCount()) - 1 - this.options.safety
+      while (1) {
+        const latestBlock = (await this.utils.getBlocksCount()) - this.options.safety
+        if (latestBlock > this.block || this.options.safety == 0) {
+          // if block changed or every check when from liquid too
+          await this.parseBlocksRange(
+            this.block - this.options.blocksToReparse,
+            latestBlock
+          )
+          this.block = latestBlock
+        }
+        await BlockchainUtils.sleep(this.options.checkInterval)
       }
-      await BlockchainUtils.sleep(this.options.checkInterval)
+    } catch (ex) {
+      if (process.env.DEBUG) {
+        console.log(ex)
+      }
+      this.onError()
     }
   }
 
@@ -64,7 +80,7 @@ class BlockchainWatcher {
 
   async parseBlock(blockNo: number) {
     if (blockNo < 1) return
-    const transactions = await BlockchainUtils.getBlockTransactions(blockNo)
+    const transactions = await this.utils.getBlockTransactions(blockNo)
     const filteredTransactions = this.filterTransactions(transactions, blockNo)
     for (const tx of filteredTransactions) {
       await this.parseTransaction(tx)
@@ -99,7 +115,7 @@ class BlockchainWatcher {
     const action = transaction.call.args[fn.actionArgument].value
     const validTo = transaction.call.args[fn.validToArgument]?.value
     span?.event('get device')
-    const device = await BlockchainUtils.deviceAddrFromTokenID(key)
+    const device = await this.utils.deviceAddrFromTokenID(key)
     if (validTo && validTo < Date.now()) {
       return span?.endWithError('Action expired')
     }
@@ -123,7 +139,7 @@ class BlockchainWatcher {
 
   async getDeviceModel(device: string) {
     try {
-      const details = await BlockchainUtils.getValueFromData(device, 'details')
+      const details = await this.utils.getValueFromData(device, 'details')
       const json = JSON.parse(details)
       return json.deviceModel
     } catch (ex) {

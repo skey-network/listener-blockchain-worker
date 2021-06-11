@@ -73,7 +73,7 @@ class Tracing {
     }
 
     // set global context manager
-    context.setGlobalContextManager(new AsyncHooksContextManager())
+    // context.setGlobalContextManager(new AsyncHooksContextManager()) TODO check why causes problem in docker
     diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.ERROR)
 
     // Create a provider for activating and tracking spans

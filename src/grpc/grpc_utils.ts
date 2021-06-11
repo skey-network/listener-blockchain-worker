@@ -37,6 +37,7 @@ class GrpcUtils {
   }
 
   constructor(protoPath: string, updatesAddr: string, grpcAddr: string) {
+    console.log({ grpcAddr, updatesAddr })
     this.protoDescriptor = this.createDescriptor(this.protoList(protoPath))
     this.grpcAddr = grpcAddr
     this.updatesAddr = updatesAddr

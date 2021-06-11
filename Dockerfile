@@ -3,6 +3,7 @@ FROM node:15.8.0
 WORKDIR /app
 
 COPY package.json /app/package.json
+COPY nodes.json.docker /app/nodes.json
 
 RUN npm install
 
