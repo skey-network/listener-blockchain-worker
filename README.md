@@ -101,6 +101,20 @@ Grpc extension port
 NODE_GRPC='10.0.0.7:6877'
 ```
 
+## Redis
+
+Redis server address
+
+```
+REDIS_HOST="127.0.0.1"
+```
+
+Redis server port
+
+```
+REDIS_PORT="6379"
+```
+
 ## Debug info
 
 Enables debug messages, COMMENT OUT do DISABLE

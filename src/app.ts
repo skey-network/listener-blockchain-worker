@@ -80,7 +80,9 @@ switch (process.env.LISTENER_MODE) {
     throw 'LISTENER_MODE is not specified or wrong, supported modes: http/grpc'
 }
 
-const producer = new Producer()
+const producer = new Producer({
+  exitAfterRedisProblemSec: 120
+})
 
 function runInGrpcMode(fallback: () => void) {
   console.log(`Listener starting in grpc mode`)
