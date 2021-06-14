@@ -6,12 +6,12 @@
  */
 
 import { sample } from 'lodash'
-import ActionParams from './action_params'
-import BCFunc from './blockchain/bcfunc'
-import BlockchainWatcher from './blockchain/blockchain_watcher'
-import GrpcWatcher from './grpc/grpc_watcher'
-import { Producer } from './queue/producer'
-import { SpanWrapper } from './tracing'
+import ActionParams from '../action_params'
+import BCFunc from '../blockchain/bcfunc'
+import BlockchainWatcher from '../blockchain/blockchain_watcher'
+import GrpcWatcher from '../grpc/grpc_watcher'
+import { Producer } from '../queue/producer'
+import { SpanWrapper } from '../tracing'
 
 const nodes = require('../nodes.json')
 
