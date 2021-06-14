@@ -10,7 +10,7 @@ import { SpanWrapper, Tracing } from './tracing'
 import ActionParams from './action_params'
 import YargsParser from 'yargs-parser'
 import fs from 'fs'
-import { Producer } from './queue/producer'
+import { Producer } from './redis/producer'
 import Worker from './worker/worker'
 ///////////////////////////////////// check for env /////////////////////////////
 const args = YargsParser(process.argv.slice(2))

@@ -10,8 +10,9 @@ import ActionParams from '../action_params'
 import BCFunc from '../blockchain/bcfunc'
 import BlockchainWatcher from '../blockchain/blockchain_watcher'
 import GrpcWatcher from '../grpc/grpc_watcher'
-import { Producer } from '../queue/producer'
+import { Producer } from '../redis/producer'
 import { SpanWrapper } from '../tracing'
+import NodeSync from './node_sync'
 
 const nodes = require('../../nodes.json')
 
@@ -31,6 +32,7 @@ class Worker {
   options: WorkerOptions
   producer: Producer
   lastNode?: string
+  nodeSync: NodeSync = new NodeSync(nodes, 1000)
 
   constructor(options: WorkerOptions) {
     this.options = options
@@ -41,10 +43,14 @@ class Worker {
   }
 
   // run it fresh - without args, or from onError
-  runWorker(mode?: 'http' | 'grpc', selectedNode?: string) {
-    selectedNode ??= this.selectNode()
+  async runWorker(mode?: 'http' | 'grpc', selectedNode?: string) {
+    selectedNode ??= (await this.nodeSync.findLeastActive()).node //this.selectNode()
     this.lastNode = selectedNode
     mode ??= this.options.mode ?? 'grpc'
+
+    console.log(selectedNode)
+
+    this.nodeSync.startReporter(selectedNode!)
 
     switch (mode) {
       case 'grpc':

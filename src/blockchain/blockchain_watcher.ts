@@ -3,7 +3,7 @@ import BlockchainUtils from './blockchain_utils'
 import Filters from './filters'
 import LogOnChange from '../log_on_change'
 import { SpanWrapper, Tracing } from '../tracing'
-import { ProducerPushFnType } from '../queue/producer'
+import { ProducerPushFnType } from '../redis/producer'
 import Uniqueness from '../uniqueness/uniqueness'
 import HttpTransactionAdapter from '../uniqueness/http_transaction_adapter'
 

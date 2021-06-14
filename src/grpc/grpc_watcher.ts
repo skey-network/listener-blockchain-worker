@@ -6,7 +6,7 @@ import InvokeParser from './invoke_parser'
 import BCFunc from '../blockchain/bcfunc'
 import { SpanWrapper, Tracing } from '../tracing'
 import ActionParams from '../action_params'
-import { ProducerPushFnType } from '../queue/producer'
+import { ProducerPushFnType } from '../redis/producer'
 
 const PROTO_PATH = 'src/waves/'
 
