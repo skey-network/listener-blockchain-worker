@@ -13,7 +13,7 @@ import GrpcWatcher from '../grpc/grpc_watcher'
 import { Producer } from '../queue/producer'
 import { SpanWrapper } from '../tracing'
 
-const nodes = require('../nodes.json')
+const nodes = require('../../nodes.json')
 
 type WorkerOptions = {
   functionDefs: BCFunc[]
