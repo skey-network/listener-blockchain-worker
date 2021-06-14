@@ -199,7 +199,7 @@ class GrpcUtils {
       sub.destroy()
     })
     sub.addListener('close', () => {
-      console.log('subscription closed')
+      console.log(`subscription closed ${this.updatesAddr}`)
       error('closed')
     })
     sub.addListener('pause', () => {
@@ -214,11 +214,11 @@ class GrpcUtils {
     if (this.subscription.problem) {
       if (diff < this.subscription.problemCooldownDiff) {
         // if subscription works again
-        console.log('subscription working again')
+        console.log(`subscription working again ${this.updatesAddr}`)
         this.subscription.problem = false
       } else if (diff > this.subscription.fallbackTriggerDiff) {
         // subscription not recovered in given time, http fallback
-        console.log('subscription failed, changing mode...')
+        console.log(`subscription failed ${this.updatesAddr}`)
         this.subscription.lastDataAt = undefined
         this.subscription.problem = false
         clearInterval(this.subscription.interval!)
@@ -226,7 +226,7 @@ class GrpcUtils {
       }
     } else if (diff > this.subscription.problemTriggerDiff) {
       // subscription was working but stopped
-      console.log('subscription problem...')
+      console.log(`subscription problem  ${this.updatesAddr} ...`)
       this.subscription.problem = true
     }
   }

@@ -4,6 +4,8 @@ import Filters from './filters'
 import LogOnChange from '../log_on_change'
 import { SpanWrapper, Tracing } from '../tracing'
 import { ProducerPushFnType } from '../queue/producer'
+import Uniqueness from '../uniqueness/uniqueness'
+import HttpTransactionAdapter from '../uniqueness/http_transaction_adapter'
 
 type WatcherOptions = {
   nodeUrl: string
@@ -18,6 +20,7 @@ type WatcherOptions = {
 class BlockchainWatcher {
   options: WatcherOptions
   utils: BlockchainUtils
+  unique: Uniqueness<any>
   iotFunction: ProducerPushFnType
   onError: () => void
   filters: Filters
@@ -33,6 +36,7 @@ class BlockchainWatcher {
   ) {
     this.onError = onError
     this.options = options
+    this.unique = new Uniqueness(new HttpTransactionAdapter())
     this.utils = new BlockchainUtils(this.options.nodeUrl)
     this.iotFunction = iotFunction
     this.filters = new Filters(
@@ -66,13 +70,6 @@ class BlockchainWatcher {
   }
 
   async parseBlocksRange(first: number, last: number) {
-    // LogOnChange.watchChange('old txes', this.parsedTxesInLastBlocks)
-    if (this.block != last) {
-      // block changed, delete old txes
-      this.parsedTxesInLastBlocks = this.parsedTxesInLastBlocks.filter(
-        (x) => x.block >= first
-      )
-    }
     for (let no = first; no <= last; no++) {
       await this.parseBlock(no)
     }
@@ -91,16 +88,8 @@ class BlockchainWatcher {
     if (transactions.lenght == 0) return []
     transactions = this.filters.filterAll(transactions)
 
-    //filter by last parsed txes
-    transactions = transactions.filter(
-      (x: any) => this.parsedTxesInLastBlocks.findIndex((y) => y.tx == x.id) == -1
-    ) // only new in block
-
-    this.parsedTxesInLastBlocks.push(
-      ...transactions.map((x: any) => {
-        return { tx: x.id, block: blockNo }
-      })
-    ) // save as old
+    // filter transactions in more efficient way before parsing
+    transactions = transactions.filter((tx: any) => this.unique.checkItemUniqueness(tx))
 
     return transactions
   }

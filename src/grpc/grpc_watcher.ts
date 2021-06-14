@@ -65,7 +65,7 @@ class GrpcWatcher {
     console.log('setup')
 
     if (this.subErrors > 3) {
-      console.log('Too many errors, changing mode')
+      console.log(`Too many errors for ${this.options.addrs.grpc}, changing mode`)
       this.fallback() // run http mode
       return
     }
@@ -74,7 +74,7 @@ class GrpcWatcher {
       await this.setupGrpcSub()
       console.log('subscription created')
     } catch (ex) {
-      console.log(Date.now())
+      console.log(new Date().toISOString())
       console.log(ex)
       // notify somewhere about connection error
       setTimeout(() => {

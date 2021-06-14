@@ -71,7 +71,11 @@ if (!process.env.LISTENER_MODE) throw 'LISTENER_MODE is not specified'
 new Worker({
   dapp: process.env.DAPP!,
   functionDefs: FUNCTIONS,
-  http: { checkInterval: CHECK_INTERVAL, safetyLevel: SAFETY_LEVEL },
+  http: {
+    checkInterval: CHECK_INTERVAL,
+    safetyLevel: SAFETY_LEVEL,
+    blocksToReparse: parseInt(process.env.BLOCKS_TO_REPARSE ?? '2')
+  },
   mode: process.env.LISTENER_MODE! as 'http' | 'grpc',
   silentInvokers: SILENT_INVOKERS
 })

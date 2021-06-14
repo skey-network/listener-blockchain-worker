@@ -23,6 +23,7 @@ type WorkerOptions = {
   http: {
     safetyLevel: number
     checkInterval: number
+    blocksToReparse: number
   }
 }
 
@@ -132,7 +133,7 @@ class Worker {
         dapp: this.options.dapp,
         watchedFunctions: this.options.functionDefs,
         silent: this.options.silentInvokers,
-        blocksToReparse: 2,
+        blocksToReparse: this.options.http.blocksToReparse,
         checkInterval: this.options.http.checkInterval,
         safety: this.options.http.safetyLevel
       },
