@@ -7,10 +7,13 @@ import BCFunc from '../blockchain/bcfunc'
 import { SpanWrapper, Tracing } from '../tracing'
 import ActionParams from '../action_params'
 import { ProducerPushFnType } from '../redis/producer'
+import Uniqueness from '../uniqueness/uniqueness'
 
 const PROTO_PATH = 'src/waves/'
 
 type GrpcWatcherOptions = {
+  /** mode */
+  mode: 'subscribe' | 'poll'
   /** watched dapp */
   dApp: string
   /** definitions of functions to be watched with args positions */
@@ -42,6 +45,7 @@ class GrpcWatcher {
     iotFunc: ProducerPushFnType,
     fallback: () => void
   ) {
+    Crypto.base58Encode
     this.options = options
     this.iotFunc = iotFunc
     this.fallback = fallback
@@ -71,8 +75,20 @@ class GrpcWatcher {
     }
 
     try {
-      await this.setupGrpcSub()
-      console.log('subscription created')
+      switch (this.options.mode) {
+        case 'subscribe':
+          await this.setupGrpcSub()
+          console.log('subscription created')
+          break
+
+        case 'poll':
+          await this.setupPolling()
+          console.log('polling created')
+          break
+
+        default:
+          break
+      }
     } catch (ex) {
       console.log(new Date().toISOString())
       console.log(ex)
@@ -95,6 +111,21 @@ class GrpcWatcher {
         this.setupSubRetryOnError()
       },
       actualHeight
+    )
+  }
+
+  async setupPolling() {
+    this.grpcUtils.pollBlocksRange(
+      async (txids) => {
+        await this.grpcUtils.runOnTransactions(txids, (x: TransactionResponse) => {
+          this.processTransaction(x)
+        })
+      },
+      (error) => {
+        this.subErrors += 1
+        this.setupSubRetryOnError()
+      },
+      2
     )
   }
 
@@ -211,7 +242,7 @@ class GrpcWatcher {
       return json.deviceModel
     } catch (ex) {
       if (process.env.DEBUG) {
-        console.log(ex)
+        //console.log(ex)
       }
     }
   }

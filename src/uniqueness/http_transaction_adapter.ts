@@ -1,7 +1,9 @@
 import UqDataAdapter from './uq_data_adapter'
 
 class HttpTransactionAdapter implements UqDataAdapter<any> {
-  // <any> as there is no type defined for tx from http yet
+  getGroupIndex(data: any, groupWindowSize: number): number {
+    return Math.floor(data.timestamp / (groupWindowSize ?? 1000)) // 1s default window size
+  }
   getTimestamp(data: any): number {
     return data.timestamp
   }

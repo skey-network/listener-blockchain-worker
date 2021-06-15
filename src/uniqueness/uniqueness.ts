@@ -1,3 +1,4 @@
+import { timeStamp } from 'console'
 import UqDataAdapter from './uq_data_adapter'
 /**
  *  checks if tx is unique in given time range
@@ -8,25 +9,35 @@ import UqDataAdapter from './uq_data_adapter'
 class Uniqueness<dataType> {
   groupWindowSize = 1000 // 1s
   actionMaxValidTime = 120 * 1000 // 2min
+  maxSetLength: number = 2
+  limitMode: 'timestamp' | 'size' = 'timestamp'
   adapter: UqDataAdapter<dataType>
 
   groups: { timeIndex: number; txes: string[] }[] = []
 
   constructor(
     adapter: UqDataAdapter<dataType>,
-    config?: { groupWindowSize?: number; actionMaxValidTime?: number }
+    config?: {
+      groupWindowSize?: number
+      actionMaxValidTime?: number
+      limitSetInsteadTime?: boolean
+      maxSetLength?: number
+      limitMode?: 'timestamp' | 'size'
+    }
   ) {
     this.groupWindowSize = config?.groupWindowSize ?? this.groupWindowSize
     this.actionMaxValidTime = config?.actionMaxValidTime ?? this.actionMaxValidTime
+    this.maxSetLength = config?.maxSetLength ?? this.maxSetLength
+    this.limitMode = config?.limitMode ?? this.limitMode
     this.adapter = adapter
   }
 
   checkItemUniqueness(data: dataType) {
-    if (!this.isItemInRange(data)) {
+    if (this.limitMode == 'timestamp' && !this.isItemInRange(data)) {
       // console.log('not in range')
       return false
     }
-    let group = this.findGroup(this.adapter.getTimestamp(data))
+    let group = this.findGroup(data)
     if (!this.isItemUniqueInGroup(group, data)) {
       // console.log('found in group')
       return false
@@ -34,7 +45,7 @@ class Uniqueness<dataType> {
 
     group ??=
       this.cleanOldGroups() ??
-      this.createGroup(this.timeIndex(this.adapter.getTimestamp(data)))
+      this.createGroup(this.adapter.getGroupIndex(data, this.groupWindowSize))
     group!.txes.push(this.adapter.getUniqueId(data))
     return true
   }
@@ -54,12 +65,10 @@ class Uniqueness<dataType> {
     return (group?.txes?.indexOf(this.adapter.getUniqueId(data)) ?? -1) == -1
   }
 
-  protected findOrCreateGroup(timestamp: number) {
-    const timeIndex = this.timeIndex(timestamp)
+  protected findOrCreateGroupFor(data: dataType) {
+    const index = this.adapter.getGroupIndex(data, this.groupWindowSize)
 
-    return (
-      this.groups.find((x) => x.timeIndex == timeIndex) ?? this.createGroup(timeIndex)
-    )
+    return this.groups.find((x) => x.timeIndex == index) ?? this.createGroup(index)
   }
 
   protected createGroup(timeIndex: number) {
@@ -69,18 +78,29 @@ class Uniqueness<dataType> {
   }
 
   protected cleanOldGroups() {
-    let minTimeIndex = this.timeIndex(Date.now() - this.actionMaxValidTime)
-    while (this.groups[0] && this.groups[0].timeIndex < minTimeIndex) this.groups.shift()
+    switch (this.limitMode) {
+      case 'timestamp':
+        let minTimeIndex = Math.floor(
+          (Date.now() - this.actionMaxValidTime!) / this.groupWindowSize
+        )
+        while (this.groups[0] && this.groups[0].timeIndex < minTimeIndex)
+          this.groups.shift()
+        console.log(this.groups.map((x) => x.txes.length))
+        break
+      case 'size':
+        while (this.groups.length > this.maxSetLength!) this.groups.shift()
+        break
+      default:
+        break
+    }
     console.log(this.groups.map((x) => x.txes.length))
     return null
   }
 
-  protected findGroup(timestamp: number) {
-    return this.groups.find((x) => x.timeIndex == this.timeIndex(timestamp))
-  }
-
-  protected timeIndex(timestamp: number) {
-    return Math.floor(timestamp / this.groupWindowSize)
+  protected findGroup(data: dataType) {
+    return this.groups.find(
+      (x) => x.timeIndex == this.adapter.getGroupIndex(data, this.groupWindowSize)
+    )
   }
 }
 

@@ -11,6 +11,15 @@ import { AssetsApiClient } from '../proto/waves/node/grpc/AssetsApi'
 import { AssetInfoResponse } from '../proto/waves/node/grpc/AssetInfoResponse'
 import { DataEntryResponse } from '../proto/waves/node/grpc/DataEntryResponse'
 import { SubscribeEvent } from '../proto/waves/events/grpc/SubscribeEvent'
+import { BlockWithHeight } from '../proto/waves/node/grpc/BlockWithHeight'
+import { SignedTransaction } from '../proto/waves/SignedTransaction'
+import BlockchainUtils from '../blockchain/blockchain_utils'
+import { Transaction } from '../proto/waves/Transaction'
+import { GetBlockUpdateResponse } from '../proto/waves/events/grpc/GetBlockUpdateResponse'
+import Uniqueness from '../uniqueness/uniqueness'
+import TxHeightPair from './tx_height_pair'
+import TxHeightPairAdapter from '../uniqueness/tx_height_adapter'
+import HttpTransactionAdapter from '../uniqueness/http_transaction_adapter'
 
 const grpc = require('@grpc/grpc-js')
 const protoLoader = require('@grpc/proto-loader')
@@ -207,6 +216,52 @@ class GrpcUtils {
     })
     this.subscription.connection = sub
     return sub
+  }
+
+  /** polls blocks over grpc in case subscription fails, should be faster than http anyway */
+  async pollBlocksRange(
+    txesCallback: (txids: (string | Buffer | Uint8Array)[]) => void,
+    errorCallback: (message: string) => void,
+    reparseBlocks: number
+  ) {
+    // try{ TODO catch and call error callback
+    const uq = new Uniqueness<TxHeightPair>(new TxHeightPairAdapter(), {
+      limitMode: 'size'
+    })
+    while (true) {
+      let currentHeight = (await this.getActualHeight()) as number
+      const pollStart = Math.max(currentHeight - reparseBlocks, 1)
+      const pollEnd = currentHeight
+      for (let height = pollStart; height <= pollEnd; height++) {
+        let transactionIds = (await this.getBlockTransactions(height)) as Uint8Array[]
+        console.log({ before: transactionIds.length })
+        transactionIds = transactionIds.filter((x) => {
+          return uq.checkItemUniqueness({
+            tx: x.toString(),
+            height
+          })
+        })
+        console.log({ after: transactionIds.length })
+
+        if (transactionIds) txesCallback(transactionIds as any)
+      }
+      await BlockchainUtils.sleep(2000)
+    }
+    // }catch(){}
+  }
+
+  async getBlockTransactions(height: number) {
+    return new Promise((resolve, reject) => {
+      const block = this.blockchainUpdatesApi().GetBlockUpdate(
+        { height: height },
+        new Metadata(),
+        {},
+        (error?: ServiceError, result?: GetBlockUpdateResponse) => {
+          if (error) reject(error)
+          else resolve(result?.update?.append?.transaction_ids)
+        }
+      )
+    })
   }
 
   watchSubscriptionState() {

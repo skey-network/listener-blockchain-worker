@@ -116,7 +116,8 @@ class Worker {
         addrs,
         dApp: this.options.dapp,
         functionDefs: this.options.functionDefs,
-        silent: this.options.silentInvokers
+        silent: this.options.silentInvokers,
+        mode: 'poll'
       },
       (params: ActionParams, span?: SpanWrapper) => {
         dataCallback(params, span)
