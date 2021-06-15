@@ -24,7 +24,7 @@ class NodeSync {
 
   // get list from
   async findLeastActive() {
-    await this.delay(Math.random() * 5000) // random delay for better balance
+    await this.delay(Math.random() * Number(process.env.MAX_START_DELAY ?? 5000)) // random delay for better balance
     let inUse = await this.nodesyncUtils.getActivity()
     let mainUsage = this.mainNodes.map((x) => {
       return { node: x, lastActive: parseInt(inUse[x] || '0') }
