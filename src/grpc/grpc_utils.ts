@@ -234,14 +234,14 @@ class GrpcUtils {
       const pollEnd = currentHeight
       for (let height = pollStart; height <= pollEnd; height++) {
         let transactionIds = (await this.getBlockTransactions(height)) as Uint8Array[]
-        console.log({ before: transactionIds.length })
+        // console.log({ before: transactionIds.length })
         transactionIds = transactionIds.filter((x) => {
           return uq.checkItemUniqueness({
             tx: x.toString(),
             height
           })
         })
-        console.log({ after: transactionIds.length })
+        // console.log({ after: transactionIds.length })
 
         if (transactionIds) txesCallback(transactionIds as any)
       }

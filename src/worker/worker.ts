@@ -16,11 +16,13 @@ import NodeSync from './node_sync'
 
 const nodes = require('../../nodes.json')
 
+type Modes = 'http' | 'grpc-polling' | 'grpc-sub'
+
 type WorkerOptions = {
   functionDefs: BCFunc[]
   dapp: string
   silentInvokers: string[]
-  mode: 'http' | 'grpc'
+  mode: Modes
   http: {
     safetyLevel: number
     checkInterval: number
@@ -43,17 +45,18 @@ class Worker {
   }
 
   // run it fresh - without args, or from onError
-  async runWorker(mode?: 'http' | 'grpc', selectedNode?: string) {
+  async runWorker(mode?: Modes, selectedNode?: string) {
     selectedNode ??= (await this.nodeSync.findLeastActive()).node //this.selectNode()
     this.lastNode = selectedNode
-    mode ??= this.options.mode ?? 'grpc'
+    mode ??= this.options.mode ?? 'grpc-sub'
 
     console.log(selectedNode)
 
     this.nodeSync.startReporter(selectedNode!)
 
     switch (mode) {
-      case 'grpc':
+      case 'grpc-polling':
+      case 'grpc-sub':
         this.runInGrpcMode(
           {
             grpc: selectedNode + ':' + process.env.NODE_GRPC_PORT,
@@ -62,7 +65,8 @@ class Worker {
           (data, span) => this.producer.pushToQueue(data, span),
           () => {
             this.onError(mode!)
-          }
+          },
+          mode
         )
         break
       case 'http':
@@ -88,9 +92,14 @@ class Worker {
    *
    * @param mode - mode which failed
    */
-  onError(mode: 'http' | 'grpc') {
+  onError(mode: Modes) {
+    this.nodeSync.stopReporter()
     switch (mode) {
-      case 'grpc':
+      case 'grpc-sub':
+        this.runWorker('grpc-polling', this.lastNode)
+        break
+
+      case 'grpc-polling':
         if (process.env.ENABLE_HTTP_FALLBACK == 'true') {
           this.runWorker('http', this.lastNode)
         } else {
@@ -108,16 +117,17 @@ class Worker {
   runInGrpcMode(
     addrs: { grpc: string; grpc_events: string },
     dataCallback: (params: ActionParams, span?: SpanWrapper) => void,
-    fallback: () => void
+    fallback: () => void,
+    mode: Modes
   ) {
-    console.log(`Listener starting in grpc mode`)
+    console.log(`Listener starting in ${mode} mode`)
     return new GrpcWatcher(
       {
         addrs,
         dApp: this.options.dapp,
         functionDefs: this.options.functionDefs,
         silent: this.options.silentInvokers,
-        mode: 'poll'
+        mode: mode as 'grpc-sub' | 'grpc-polling'
       },
       (params: ActionParams, span?: SpanWrapper) => {
         dataCallback(params, span)

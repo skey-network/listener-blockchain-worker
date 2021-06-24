@@ -29,6 +29,13 @@ if (process.env.DAPP == undefined) {
   exit()
 }
 
+const supportedModes = ['http', 'grpc-polling', 'grpc-sub']
+
+if (supportedModes.indexOf(process.env.LISTENER_MODE!) == -1) {
+  console.log(`Wrong mode specified, supported: ${supportedModes.join(', ')}`)
+  exit()
+}
+
 ////////////////////////////////////// dummy server, in case docker hosting requires one in container ////////////////////////////////
 
 if (process.env.PORT) {
@@ -76,6 +83,6 @@ new Worker({
     safetyLevel: SAFETY_LEVEL,
     blocksToReparse: parseInt(process.env.BLOCKS_TO_REPARSE ?? '2')
   },
-  mode: process.env.LISTENER_MODE! as 'http' | 'grpc',
+  mode: process.env.LISTENER_MODE! as 'http' | 'grpc-polling' | 'grpc-sub',
   silentInvokers: SILENT_INVOKERS
 })

@@ -13,7 +13,7 @@ const PROTO_PATH = 'src/waves/'
 
 type GrpcWatcherOptions = {
   /** mode */
-  mode: 'subscribe' | 'poll'
+  mode: 'grpc-sub' | 'grpc-polling'
   /** watched dapp */
   dApp: string
   /** definitions of functions to be watched with args positions */
@@ -76,12 +76,12 @@ class GrpcWatcher {
 
     try {
       switch (this.options.mode) {
-        case 'subscribe':
+        case 'grpc-sub':
           await this.setupGrpcSub()
           console.log('subscription created')
           break
 
-        case 'poll':
+        case 'grpc-polling':
           await this.setupPolling()
           console.log('polling created')
           break
