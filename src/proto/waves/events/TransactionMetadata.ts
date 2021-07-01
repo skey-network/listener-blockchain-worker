@@ -5,45 +5,45 @@ import type { InvokeScriptResult as _waves_InvokeScriptResult, InvokeScriptResul
 import type { Long } from '@grpc/proto-loader';
 
 export interface _waves_events_TransactionMetadata_InvokeScriptMetadata_Argument {
-  'integerValue'?: (number | string | Long);
-  'binaryValue'?: (Buffer | Uint8Array | string);
-  'stringValue'?: (string);
-  'booleanValue'?: (boolean);
+  'integer_value'?: (number | string | Long);
+  'binary_value'?: (Buffer | Uint8Array | string);
+  'string_value'?: (string);
+  'boolean_value'?: (boolean);
   'list'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata_Argument_List);
-  'value'?: "integerValue"|"binaryValue"|"stringValue"|"booleanValue"|"list";
+  'value'?: "integer_value"|"binary_value"|"string_value"|"boolean_value"|"list";
 }
 
 export interface _waves_events_TransactionMetadata_InvokeScriptMetadata_Argument__Output {
-  'integerValue'?: (string);
-  'binaryValue'?: (Buffer);
-  'stringValue'?: (string);
-  'booleanValue'?: (boolean);
+  'integer_value'?: (string);
+  'binary_value'?: (Buffer);
+  'string_value'?: (string);
+  'boolean_value'?: (boolean);
   'list'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata_Argument_List__Output);
-  'value': "integerValue"|"binaryValue"|"stringValue"|"booleanValue"|"list";
+  'value': "integer_value"|"binary_value"|"string_value"|"boolean_value"|"list";
 }
 
 export interface _waves_events_TransactionMetadata_InvokeScriptMetadata {
-  'dAppAddress'?: (Buffer | Uint8Array | string);
-  'functionName'?: (string);
+  'd_app_address'?: (Buffer | Uint8Array | string);
+  'function_name'?: (string);
   'arguments'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata_Argument)[];
   'payments'?: (_waves_Amount)[];
   'result'?: (_waves_InvokeScriptResult);
 }
 
 export interface _waves_events_TransactionMetadata_InvokeScriptMetadata__Output {
-  'dAppAddress': (Buffer);
-  'functionName': (string);
+  'd_app_address': (Buffer);
+  'function_name': (string);
   'arguments': (_waves_events_TransactionMetadata_InvokeScriptMetadata_Argument__Output)[];
   'payments': (_waves_Amount__Output)[];
   'result'?: (_waves_InvokeScriptResult__Output);
 }
 
 export interface _waves_events_TransactionMetadata_LeaseMetadata {
-  'recipientAddress'?: (Buffer | Uint8Array | string);
+  'recipient_address'?: (Buffer | Uint8Array | string);
 }
 
 export interface _waves_events_TransactionMetadata_LeaseMetadata__Output {
-  'recipientAddress': (Buffer);
+  'recipient_address': (Buffer);
 }
 
 export interface _waves_events_TransactionMetadata_InvokeScriptMetadata_Argument_List {
@@ -55,33 +55,33 @@ export interface _waves_events_TransactionMetadata_InvokeScriptMetadata_Argument
 }
 
 export interface _waves_events_TransactionMetadata_MassTransferMetadata {
-  'recipientsAddresses'?: (Buffer | Uint8Array | string)[];
+  'recipients_addresses'?: (Buffer | Uint8Array | string)[];
 }
 
 export interface _waves_events_TransactionMetadata_MassTransferMetadata__Output {
-  'recipientsAddresses': (Buffer)[];
+  'recipients_addresses': (Buffer)[];
 }
 
 export interface _waves_events_TransactionMetadata_TransferMetadata {
-  'recipientAddress'?: (Buffer | Uint8Array | string);
+  'recipient_address'?: (Buffer | Uint8Array | string);
 }
 
 export interface _waves_events_TransactionMetadata_TransferMetadata__Output {
-  'recipientAddress': (Buffer);
+  'recipient_address': (Buffer);
 }
 
 export interface TransactionMetadata {
   'transfer'?: (_waves_events_TransactionMetadata_TransferMetadata);
-  'massTransfer'?: (_waves_events_TransactionMetadata_MassTransferMetadata);
-  'invokeScript'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata);
-  'leaseMeta'?: (_waves_events_TransactionMetadata_LeaseMetadata);
-  'metadata'?: "transfer"|"massTransfer"|"invokeScript"|"leaseMeta";
+  'mass_transfer'?: (_waves_events_TransactionMetadata_MassTransferMetadata);
+  'invoke_script'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata);
+  'lease_meta'?: (_waves_events_TransactionMetadata_LeaseMetadata);
+  'metadata'?: "transfer"|"mass_transfer"|"invoke_script"|"lease_meta";
 }
 
 export interface TransactionMetadata__Output {
   'transfer'?: (_waves_events_TransactionMetadata_TransferMetadata__Output);
-  'massTransfer'?: (_waves_events_TransactionMetadata_MassTransferMetadata__Output);
-  'invokeScript'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata__Output);
-  'leaseMeta'?: (_waves_events_TransactionMetadata_LeaseMetadata__Output);
-  'metadata': "transfer"|"massTransfer"|"invokeScript"|"leaseMeta";
+  'mass_transfer'?: (_waves_events_TransactionMetadata_MassTransferMetadata__Output);
+  'invoke_script'?: (_waves_events_TransactionMetadata_InvokeScriptMetadata__Output);
+  'lease_meta'?: (_waves_events_TransactionMetadata_LeaseMetadata__Output);
+  'metadata': "transfer"|"mass_transfer"|"invoke_script"|"lease_meta";
 }

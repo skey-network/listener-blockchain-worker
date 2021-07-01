@@ -1,5 +1,7 @@
 // Original file: src/waves/events.proto
 
+import type { _waves_events_StateUpdate_AssetInfo, _waves_events_StateUpdate_AssetInfo__Output } from '../../waves/events/StateUpdate';
+import type { TransactionMetadata as _waves_events_TransactionMetadata, TransactionMetadata__Output as _waves_events_TransactionMetadata__Output } from '../../waves/events/TransactionMetadata';
 import type { StateUpdate as _waves_events_StateUpdate, StateUpdate__Output as _waves_events_StateUpdate__Output } from '../../waves/events/StateUpdate';
 import type { Block as _waves_Block, Block__Output as _waves_Block__Output } from '../../waves/Block';
 import type { SignedMicroBlock as _waves_SignedMicroBlock, SignedMicroBlock__Output as _waves_SignedMicroBlock__Output } from '../../waves/SignedMicroBlock';
@@ -9,6 +11,7 @@ export interface _waves_events_BlockchainUpdated_Append {
   'block'?: (_waves_events_BlockchainUpdated_Append_BlockAppend);
   'micro_block'?: (_waves_events_BlockchainUpdated_Append_MicroBlockAppend);
   'transaction_ids'?: (Buffer | Uint8Array | string)[];
+  'transactions_metadata'?: (_waves_events_TransactionMetadata)[];
   'state_update'?: (_waves_events_StateUpdate);
   'transaction_state_updates'?: (_waves_events_StateUpdate)[];
   'body'?: "block"|"micro_block";
@@ -18,6 +21,7 @@ export interface _waves_events_BlockchainUpdated_Append__Output {
   'block'?: (_waves_events_BlockchainUpdated_Append_BlockAppend__Output);
   'micro_block'?: (_waves_events_BlockchainUpdated_Append_MicroBlockAppend__Output);
   'transaction_ids': (Buffer)[];
+  'transactions_metadata': (_waves_events_TransactionMetadata__Output)[];
   'state_update'?: (_waves_events_StateUpdate__Output);
   'transaction_state_updates': (_waves_events_StateUpdate__Output)[];
   'body': "block"|"micro_block";
@@ -45,10 +49,16 @@ export interface _waves_events_BlockchainUpdated_Append_MicroBlockAppend__Output
 
 export interface _waves_events_BlockchainUpdated_Rollback {
   'type'?: (_waves_events_BlockchainUpdated_Rollback_RollbackType | keyof typeof _waves_events_BlockchainUpdated_Rollback_RollbackType);
+  'removed_transaction_ids'?: (Buffer | Uint8Array | string)[];
+  'removed_blocks'?: (_waves_Block)[];
+  'rollback_state_update'?: (_waves_events_StateUpdate);
 }
 
 export interface _waves_events_BlockchainUpdated_Rollback__Output {
   'type': (keyof typeof _waves_events_BlockchainUpdated_Rollback_RollbackType);
+  'removed_transaction_ids': (Buffer)[];
+  'removed_blocks': (_waves_Block__Output)[];
+  'rollback_state_update'?: (_waves_events_StateUpdate__Output);
 }
 
 // Original file: src/waves/events.proto
@@ -63,6 +73,7 @@ export interface BlockchainUpdated {
   'height'?: (number);
   'append'?: (_waves_events_BlockchainUpdated_Append);
   'rollback'?: (_waves_events_BlockchainUpdated_Rollback);
+  'referenced_assets'?: (_waves_events_StateUpdate_AssetInfo)[];
   'update'?: "append"|"rollback";
 }
 
@@ -71,5 +82,6 @@ export interface BlockchainUpdated__Output {
   'height': (number);
   'append'?: (_waves_events_BlockchainUpdated_Append__Output);
   'rollback'?: (_waves_events_BlockchainUpdated_Rollback__Output);
+  'referenced_assets': (_waves_events_StateUpdate_AssetInfo__Output)[];
   'update': "append"|"rollback";
 }

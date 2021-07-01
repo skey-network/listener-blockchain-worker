@@ -4,4 +4,4 @@
 app.js
 dist
 node_modules
-.nodes.json
+nodes.json
