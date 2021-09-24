@@ -46,7 +46,8 @@ class Worker {
 
   // run it fresh - without args, or from onError
   async runWorker(mode?: Modes, selectedNode?: string) {
-    selectedNode ??= (await this.nodeSync.findLeastActive()).node //this.selectNode()
+    selectedNode ??=
+      process.env.NODE_ADDRESS ?? (await this.nodeSync.findLeastActive()).node //this.selectNode()
     this.lastNode = selectedNode
     mode ??= this.options.mode ?? 'grpc-sub'
 
@@ -85,7 +86,7 @@ class Worker {
 
   selectNode() {
     //TODO use info from redis (queue "nodes", each node has timestamp which is updated on interval when in use by node)
-    return sample(nodes)
+    return process.env.NODE_ADDRESS ?? sample(nodes)
   }
 
   /**
