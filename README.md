@@ -10,7 +10,8 @@ Required packages: `nodejs`, `npm` (prefered instalation via `nvm`)
 2. Navigate to blockchain-worker folder
 3. Install dependencies `npm install`
 4. Copy `.env.example` as `.env`, and modify it's contents as in [Configuration file section](#configuration-file).
-5. Run command `npm start`
+5. Copy `nodes.json.example` as `nodes.json`, modify nodes list if needed
+6. Run command `npm start`
 
 # Building and running docker image
 
@@ -38,6 +39,7 @@ docker run -i <place docker envs here> IMAGE_ID
 ```
 
 If there is no env specified Blockchain Worker will stop execution.
+If no `nodes.json` is mounted to container, a default one (nodes.json.docker) will be used
 
 ## Build and run
 
@@ -66,13 +68,6 @@ Functions called in dApp in order to make action on device (separated by "|")
 DAPP_FUNCS='deviceAction|deviceActionAs'
 ```
 
-Url to node used for monitoring state of dApp
-
-```
-NODE_URL='https://nodes-testnet.wavesnodes.com'
-
-```
-
 ### Options for HTTP mode
 
 Number of blocks over parsed one, higher values are safer but slower.
@@ -92,13 +87,19 @@ CHECK_INTERVAL=1000
 Blockchain updates extension port
 
 ```
-NODE_GRPC_EVENTS='localhost:6881'
+NODE_GRPC_EVENTS_PORT='6881'
 ```
 
 Grpc extension port
 
 ```
-NODE_GRPC='10.0.0.7:6877'
+NODE_GRPC_PORT='6877'
+```
+
+HTTP fallback when grpc fails
+
+```
+ENABLE_HTTP_FALLBACK='true'
 ```
 
 ## Redis
