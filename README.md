@@ -68,6 +68,16 @@ Functions called in dApp in order to make action on device (separated by "|")
 DAPP_FUNCS='deviceAction|deviceActionAs'
 ```
 
+Listener modes:
+
+- grpc-sub - subscription using blockchain-updates extension
+- grpc-polling - polling state over grpc
+- http - polling state over http
+
+```
+LISTENER_MODE='grpc-sub'
+```
+
 ### Options for HTTP mode
 
 Number of blocks over parsed one, higher values are safer but slower.
